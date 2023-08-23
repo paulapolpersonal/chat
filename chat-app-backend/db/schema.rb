@@ -21,6 +21,8 @@ ActiveRecord::Schema.define(version: 2023_07_11_121411) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.bigint "rooms_id"
+    t.bigint "room_id"
+    t.index ["room_id"], name: "index_messages_on_room_id"
     t.index ["rooms_id"], name: "index_messages_on_rooms_id"
   end
 
@@ -31,5 +33,6 @@ ActiveRecord::Schema.define(version: 2023_07_11_121411) do
     t.datetime "updated_at", precision: 6, null: false
   end
 
+  add_foreign_key "messages", "rooms"
   add_foreign_key "messages", "rooms", column: "rooms_id"
 end

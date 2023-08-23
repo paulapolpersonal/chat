@@ -34,5 +34,19 @@ module.exports = {
     },
   },
 
-  modules: ["nuxt-leaflet", "bootstrap-vue/nuxt"],
+  modules: ["nuxt-leaflet", "bootstrap-vue/nuxt", "@nuxtjs/axios"],
+
+  axios: {
+    host: "localhost",
+    port: 5000,
+  },
+
+  proxy: {
+    "/cable": {
+      target: "http://localhost:5000",
+      ws: true,
+    },
+  },
+
+  ssr: false,
 };
