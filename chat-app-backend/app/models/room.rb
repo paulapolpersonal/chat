@@ -1,5 +1,7 @@
 class Room < ApplicationRecord
-  has_many :messages
+  has_many :messages, dependent: :destroy
+
+  validates :location, presence: true
 
   after_create :add_name
 

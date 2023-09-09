@@ -1,35 +1,32 @@
 <template>
-  <div class="container">
-    <div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white">
-      <div class="d-flex justify-content-between header">
-        <div>{{ room.name }}</div>
-        <div @click="closeChatBox()">cancel</div>
-      </div>
-      <div class="list-group list-group-flush border-bottom scrollarea">
-        <div
-          class="list-group-item list-group-item-action py-3 lh-tight"
-          v-for="(message, index) in messages"
-          :key="index"
-        >
-          <div class="d-flex w-100 align-items-center justify-content-between">
-            <strong class="mb-1">{{ message?.username }}</strong>
-          </div>
-          <div class="col-10 mb-1 small">{{ message?.message }}</div>
-        </div>
+  <div class="chat-box mt-2 mr-2">
+    <div class="d-flex justify-content-between align-items-center p-2 header">
+      <div>{{ room.name }}</div>
+      <strong role="button" @click="closeChatBox()">X</strong>
+    </div>
+    <div id="messages-container" class="messages-container pb-2 px-2">
+      <div
+        v-for="(message, index) in messages"
+        :key="index"
+        :class="message.username === username ? 'outgoing' : 'incoming'"
+        class="chat-bubble my-1"
+      >
+        <strong class="username">{{ message.username }}</strong>
+        <div>{{ message.message }}</div>
       </div>
     </div>
-    <div>
-      <div
-        class="d-flex align-items-center flex-shrink-0 p-3 link-dark text-decoration-none border-bottom"
-      >
-        <form class="d-flex" @submit.prevent="addUsername(username)">
-          <input class="fs-5 fw-semibold" v-model="username" />
-          <input type="submit" value="Submit" />
-        </form>
-      </div>
-      <form @submit.prevent="sendMessage()" class="d-flex mb-1">
+    <div class="mx-2 py-1">
+      <form class="d-flex mb-2" @submit.prevent="addUsername(username)">
         <input
-          class="form-control"
+          class="form-control mr-2"
+          placeholder="Username"
+          v-model="username"
+        />
+        <input type="submit" value="Submit" />
+      </form>
+      <form @submit.prevent="sendMessage()" class="d-flex">
+        <input
+          class="form-control mr-2"
           placeholder="Write a message"
           v-model="message"
         />
@@ -41,6 +38,7 @@
 
 <script>
 import { createConsumer } from "@rails/actioncable";
+import { mapGetters, mapActions } from "vuex";
 
 export default {
   data() {
@@ -61,33 +59,38 @@ export default {
   },
 
   mounted() {
-    this.getMessages();
-    this.consumer = createConsumer("ws://localhost:5000/cable");
+    this.fetchMessages(this.room.id).then(() => {
+      this.messages = [...this.storedMessages];
+      this.scrollDown();
+    });
     this.handleChatCable();
     if (sessionStorage.getItem("username") !== undefined)
       this.username = sessionStorage.getItem("username");
   },
 
+  computed: {
+    ...mapGetters({
+      storedMessages: "chat/messages",
+    }),
+  },
+
   methods: {
-    getMessages() {
-      this.$axios
-        .$get("/messages", { params: { room_id: this.room.id } })
-        .then((response) => {
-          this.messages = response;
-        });
-    },
+    ...mapActions({
+      fetchMessages: "chat/fetchMessages",
+    }),
 
     handleChatCable() {
-      let that = this;
+      this.consumer = createConsumer("ws://localhost:5000/cable");
+
       this.chatChannel = this.consumer.subscriptions.create(
         {
           channel: "ChatChannel",
           room_id: this.room.id,
         },
         {
-          received(data) {
-            that.messages.push({ username: that.username, message: data });
-            console.log(data);
+          received: (data) => {
+            this.messages.push(data);
+            this.scrollDown();
           },
         }
       );
@@ -108,29 +111,60 @@ export default {
     closeChatBox() {
       this.$emit("closeChatBox");
     },
+
+    scrollDown() {
+      const chatContainer = document.getElementById("messages-container");
+      setTimeout(function () {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }, 0);
+    },
   },
 };
 </script>
 
-<style>
-.container {
-  height: 400px;
-  max-width: 500px;
-  overflow: scroll;
+<style lang="scss">
+.chat-box {
   position: absolute;
   z-index: 400;
   right: 0;
-  margin-top: 10px;
-  background-color: white;
+  background-color: #f5f5f5;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  font-family: Arial, sans-serif;
+  width: 500px;
+}
+
+.messages-container {
+  height: 400px;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
 }
 
 .header {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  background-color: white;
+  border-radius: 10px 10px 0 0;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.chat-bubble {
+  color: #fff;
+  border-radius: 5px;
+  padding: 10px;
+  word-break: break-word;
+  width: 50%;
+}
+
+.incoming {
+  align-self: flex-start;
+  background-color: #007bff;
+}
+
+.outgoing {
+  align-self: flex-end;
+  background-color: #4caf50;
+}
+
+.username {
+  font-size: 1rem;
 }
 </style>

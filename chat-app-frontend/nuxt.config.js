@@ -48,5 +48,7 @@ module.exports = {
     },
   },
 
+  plugins: [{ src: "~/plugins/api" }],
+
   ssr: false,
 };

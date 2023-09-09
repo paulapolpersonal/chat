@@ -5,7 +5,6 @@
         <l-tile-layer
           url="http://{s}.tile.osm.org/{z}/{x}/{y}.png"
         ></l-tile-layer>
-        <!-- <l-marker :lat-lng="[55.9464418, 8.1277591]"></l-marker> -->
         <l-marker
           v-for="(room, index) in rooms"
           v-bind:key="index"
@@ -15,12 +14,19 @@
         </l-marker>
       </l-map>
     </div>
-    <ChatBox v-if="chatBoxOpen" :room="room" @closeChatBox="closeChatBox" />
+    <ChatBox
+      v-if="chatBoxOpen"
+      :room="room"
+      :key="room.id"
+      @closeChatBox="closeChatBox"
+    />
   </div>
 </template>
 
 <script>
 import ChatBox from "~/components/ChatBox.vue";
+import { createConsumer } from "@rails/actioncable";
+import { mapGetters, mapActions } from "vuex";
 
 export default {
   components: { ChatBox },
@@ -28,16 +34,27 @@ export default {
   data() {
     return {
       chatBoxOpen: false,
-      rooms: [],
       room: {},
     };
   },
 
   mounted() {
-    this.getRooms();
+    this.fetchRooms();
+    this.handleRoomsCable();
+  },
+
+  computed: {
+    ...mapGetters({
+      rooms: "homepage/rooms",
+    }),
   },
 
   methods: {
+    ...mapActions({
+      fetchRooms: "homepage/fetchRooms",
+      createRoom: "homepage/createRoom",
+    }),
+
     addMarker(event) {
       const location = `${JSON.stringify(event.latlng.lat)}, ${JSON.stringify(
         event.latlng.lng
@@ -46,28 +63,33 @@ export default {
     },
 
     openChatBox(room) {
-      this.chatBoxOpen = true;
+      if (this.chatBoxOpen) this.closeChatBox();
       this.room = room;
+      this.chatBoxOpen = true;
     },
 
     closeChatBox() {
+      this.room = null;
       this.chatBoxOpen = false;
-    },
-
-    getRooms() {
-      this.$axios.$get("/rooms").then((response) => {
-        this.rooms = response;
-      });
     },
 
     getLatLng(room) {
       return room.location.split(",").map(parseFloat);
     },
 
-    createRoom(location) {
-      this.$axios.$post("/rooms", { location: location }).then((response) => {
-        this.rooms = response;
-      });
+    handleRoomsCable() {
+      const consumer = createConsumer("ws://localhost:5000/cable");
+
+      consumer.subscriptions.create(
+        {
+          channel: "RoomsChannel",
+        },
+        {
+          received: (data) => {
+            if (data === "success") this.fetchRooms();
+          },
+        }
+      );
     },
   },
 };

@@ -6,8 +6,10 @@ class RoomsController < ApplicationController
   end
 
   def create
-    Room.create!(location: params[:location])
+    room = Room.create!(location: params[:location])
 
-    render json: Room.all
+    render json: room
+
+    ActionCable.server.broadcast('rooms_channel', 'success')
   end
 end
