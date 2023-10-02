@@ -34,7 +34,12 @@ module.exports = {
     },
   },
 
-  modules: ["nuxt-leaflet", "bootstrap-vue/nuxt", "@nuxtjs/axios"],
+  modules: [
+    "nuxt-leaflet",
+    "bootstrap-vue/nuxt",
+    "@nuxtjs/axios",
+    "vue-browser-detect-plugin/nuxt",
+  ],
 
   axios: {
     host: "localhost",
@@ -48,7 +53,9 @@ module.exports = {
     },
   },
 
-  plugins: [{ src: "~/plugins/api" }],
+  plugins: [{ src: "~/plugins/api" }, { src: "~/plugins/consumer" }],
+
+  css: ["~/assets/css/main.scss"],
 
   ssr: false,
 };

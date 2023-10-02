@@ -1,7 +1,7 @@
 <template>
   <div>
     <div id="map">
-      <l-map :zoom="5" :center="[46.7712, 23.6236]" @click="addMarker">
+      <l-map :zoom="5" :center="mapCenter" @click="addMarker" ref="worldMap">
         <l-tile-layer
           url="http://{s}.tile.osm.org/{z}/{x}/{y}.png"
         ></l-tile-layer>
@@ -14,18 +14,12 @@
         </l-marker>
       </l-map>
     </div>
-    <ChatBox
-      v-if="chatBoxOpen"
-      :room="room"
-      :key="room.id"
-      @closeChatBox="closeChatBox"
-    />
+    <ChatBox v-if="chatBoxOpen" :room="room" @closeChatBox="closeChatBox" />
   </div>
 </template>
 
 <script>
 import ChatBox from "~/components/ChatBox.vue";
-import { createConsumer } from "@rails/actioncable";
 import { mapGetters, mapActions } from "vuex";
 
 export default {
@@ -35,6 +29,7 @@ export default {
     return {
       chatBoxOpen: false,
       room: {},
+      mapCenter: [46.7712, 23.6236],
     };
   },
 
@@ -56,9 +51,8 @@ export default {
     }),
 
     addMarker(event) {
-      const location = `${JSON.stringify(event.latlng.lat)}, ${JSON.stringify(
-        event.latlng.lng
-      )}`;
+      const location = `${event.latlng.lat}, ${event.latlng.lng}`;
+
       this.createRoom(location);
     },
 
@@ -78,9 +72,7 @@ export default {
     },
 
     handleRoomsCable() {
-      const consumer = createConsumer("ws://localhost:5000/cable");
-
-      consumer.subscriptions.create(
+      this.$consumer.subscriptions.create(
         {
           channel: "RoomsChannel",
         },
@@ -94,16 +86,3 @@ export default {
   },
 };
 </script>
-
-<style>
-body,
-html {
-  height: 100%;
-}
-
-#map {
-  width: 100%;
-  height: 100%;
-  position: absolute !important;
-}
-</style>

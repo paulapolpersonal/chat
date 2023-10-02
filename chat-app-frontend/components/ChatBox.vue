@@ -8,7 +8,7 @@
       <div
         v-for="(message, index) in messages"
         :key="index"
-        :class="message.username === username ? 'outgoing' : 'incoming'"
+        :class="messageDirection(message)"
         class="chat-bubble my-1"
       >
         <strong class="username">{{ message.username }}</strong>
@@ -37,7 +37,6 @@
 </template>
 
 <script>
-import { createConsumer } from "@rails/actioncable";
 import { mapGetters, mapActions } from "vuex";
 
 export default {
@@ -45,8 +44,6 @@ export default {
     return {
       username: "",
       message: "",
-      messages: [],
-      consumer: null,
       chatChannel: null,
     };
   },
@@ -58,9 +55,16 @@ export default {
     },
   },
 
+  watch: {
+    room(value) {
+      this.fetchMessages(value.id).then(() => {
+        this.scrollDown();
+      });
+    },
+  },
+
   mounted() {
     this.fetchMessages(this.room.id).then(() => {
-      this.messages = [...this.storedMessages];
       this.scrollDown();
     });
     this.handleChatCable();
@@ -70,26 +74,29 @@ export default {
 
   computed: {
     ...mapGetters({
-      storedMessages: "chat/messages",
+      messages: "chat/messages",
     }),
   },
 
   methods: {
     ...mapActions({
       fetchMessages: "chat/fetchMessages",
+      addMessage: "chat/addMessage",
     }),
 
-    handleChatCable() {
-      this.consumer = createConsumer("ws://localhost:5000/cable");
+    messageDirection(message) {
+      return message.username === this.username ? "outgoing" : "incoming";
+    },
 
-      this.chatChannel = this.consumer.subscriptions.create(
+    handleChatCable() {
+      this.chatChannel = this.$consumer.subscriptions.create(
         {
           channel: "ChatChannel",
           room_id: this.room.id,
         },
         {
           received: (data) => {
-            this.messages.push(data);
+            this.addMessage(data);
             this.scrollDown();
           },
         }
@@ -123,48 +130,5 @@ export default {
 </script>
 
 <style lang="scss">
-.chat-box {
-  position: absolute;
-  z-index: 400;
-  right: 0;
-  background-color: #f5f5f5;
-  border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  font-family: Arial, sans-serif;
-  width: 500px;
-}
-
-.messages-container {
-  height: 400px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-}
-
-.header {
-  border-radius: 10px 10px 0 0;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-}
-
-.chat-bubble {
-  color: #fff;
-  border-radius: 5px;
-  padding: 10px;
-  word-break: break-word;
-  width: 50%;
-}
-
-.incoming {
-  align-self: flex-start;
-  background-color: #007bff;
-}
-
-.outgoing {
-  align-self: flex-end;
-  background-color: #4caf50;
-}
-
-.username {
-  font-size: 1rem;
-}
+@import "~/assets/css/chatbox.scss";
 </style>

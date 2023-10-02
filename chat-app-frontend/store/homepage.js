@@ -18,6 +18,11 @@ export const actions = {
     const response = await this.$api.rooms.post(payload);
     commit("CREATE_ROOM", response);
   },
+
+  // addRoom({ commit }, payload) {
+  //   const response = this.$api.rooms.get(payload);
+  //   commit("CREATE_ROOM", response);
+  // },
 };
 
 export const mutations = {
@@ -26,6 +31,6 @@ export const mutations = {
   },
 
   CREATE_ROOM(state, room) {
-    state.rooms = state.rooms.concat(room);
+    state.rooms = [...state.rooms, room];
   },
 };

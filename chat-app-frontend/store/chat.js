@@ -13,10 +13,18 @@ export const actions = {
     const response = await this.$api.messages.get(payload);
     commit("GET_MESSAGES", response);
   },
+
+  addMessage({ commit }, payload) {
+    commit("ADD_MESSAGE", payload);
+  },
 };
 
 export const mutations = {
   GET_MESSAGES(state, messages) {
     state.messages = messages;
+  },
+
+  ADD_MESSAGE(state, message) {
+    state.messages.push(message);
   },
 };
