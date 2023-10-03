@@ -14,7 +14,15 @@
         </l-marker>
       </l-map>
     </div>
-    <ChatBox v-if="chatBoxOpen" :room="room" @closeChatBox="closeChatBox" />
+    <b-alert :show="showSuccess" class="banner" variant="success" dismissible
+      >Success</b-alert
+    >
+    <ChatBox
+      v-if="chatBoxOpen"
+      :room="room"
+      @closeChatBox="closeChatBox"
+      @showSuccessBanner="showSuccessBanner"
+    />
   </div>
 </template>
 
@@ -30,6 +38,7 @@ export default {
       chatBoxOpen: false,
       room: {},
       mapCenter: [46.7712, 23.6236],
+      showSuccess: false,
     };
   },
 
@@ -49,6 +58,10 @@ export default {
       fetchRooms: "homepage/fetchRooms",
       createRoom: "homepage/createRoom",
     }),
+
+    showSuccessBanner() {
+      this.showSuccess = true;
+    },
 
     addMarker(event) {
       const location = `${event.latlng.lat}, ${event.latlng.lng}`;

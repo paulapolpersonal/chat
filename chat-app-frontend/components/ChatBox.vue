@@ -11,12 +11,12 @@
         :class="messageDirection(message)"
         class="chat-bubble my-1"
       >
-        <strong class="username">{{ message.username }}</strong>
+        <strong class="username">{{ message.user.name }}</strong>
         <div>{{ message.message }}</div>
       </div>
     </div>
     <div class="mx-2 py-1">
-      <form class="d-flex mb-2" @submit.prevent="addUsername(username)">
+      <form class="d-flex mb-2" @submit.prevent="submitUser()">
         <input
           class="form-control mr-2"
           placeholder="Username"
@@ -68,13 +68,15 @@ export default {
       this.scrollDown();
     });
     this.handleChatCable();
-    if (sessionStorage.getItem("username") !== undefined)
-      this.username = sessionStorage.getItem("username");
+    this.fetchUser(this.$browserDetect.meta.name).then(() => {
+      if (this.user) this.username = this.user.name;
+    });
   },
 
   computed: {
     ...mapGetters({
       messages: "chat/messages",
+      user: "user/user",
     }),
   },
 
@@ -82,10 +84,19 @@ export default {
     ...mapActions({
       fetchMessages: "chat/fetchMessages",
       addMessage: "chat/addMessage",
+      fetchUser: "user/fetchUser",
+      createUser: "user/createUser",
+      updateUser: "user/updateUser",
     }),
 
     messageDirection(message) {
-      return message.username === this.username ? "outgoing" : "incoming";
+      if (this.user) {
+        return message.user.browser === this.user.browser
+          ? "outgoing"
+          : "incoming";
+      }
+
+      return "incoming";
     },
 
     handleChatCable() {
@@ -105,14 +116,28 @@ export default {
 
     sendMessage() {
       this.chatChannel.send({
-        username: this.username,
+        user_id: this.user.id,
         message: this.message,
+        user: {
+          name: this.user.name,
+          browser: this.user.browser,
+        },
       });
       this.message = "";
     },
 
-    addUsername(username) {
-      sessionStorage.setItem("username", username);
+    submitUser() {
+      if (this.user) {
+        this.updateUser({ id: this.user.id, name: this.username }).then(() => {
+          this.$emit("showSuccessBanner");
+          this.fetchMessages(this.room.id);
+        });
+      } else {
+        this.createUser({
+          browser: this.$browserDetect.meta.name,
+          name: this.username,
+        });
+      }
     },
 
     closeChatBox() {

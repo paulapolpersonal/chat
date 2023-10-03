@@ -4,7 +4,7 @@ class ChatChannel < ApplicationCable::Channel
   end
 
   def receive(data)
-    Message.create!(message: data['message'], username: data['username'], room_id: params[:room_id])
+    Message.create!(message: data['message'], user_id: data['user_id'], room_id: params[:room_id])
 
     ActionCable.server.broadcast("chat_#{params[:room_id]}", data)
   end

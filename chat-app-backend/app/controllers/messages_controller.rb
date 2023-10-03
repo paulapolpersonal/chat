@@ -1,7 +1,7 @@
 class MessagesController < ApplicationController
   def index
-    messages = Message.where(room_id: params[:room_id])
+    messages = Message.includes(:user).where(room_id: params[:room_id])
 
-    render json: messages
+    render json: messages.as_json(include: { user: { only: %i[browser name] } })
   end
 end

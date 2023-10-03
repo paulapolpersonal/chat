@@ -8,3 +8,9 @@ html {
   height: 100%;
   position: absolute !important;
 }
+
+.banner {
+  position: absolute;
+  z-index: 1000;
+  left: 0;
+}

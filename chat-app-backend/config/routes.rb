@@ -3,6 +3,8 @@ Rails.application.routes.draw do
 
   resources :rooms, only: %w[index create]
   resources :messages, only: :index
+  resources :users, only: %w[create update]
+  get 'user/:browser', to: 'users#show'
 
   mount ActionCable.server => '/cable'
 end
