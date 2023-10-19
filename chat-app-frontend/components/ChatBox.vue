@@ -4,8 +4,14 @@
       <div>{{ room.name }}</div>
       <strong role="button" @click="closeChatBox()">X</strong>
     </div>
-    <div id="messages-container" class="messages-container pb-2 px-2">
+    <div
+      id="messages-container"
+      class="messages-container pb-2 px-2"
+      :class="loaderClass()"
+    >
+      <b-spinner v-if="messagesLoading" medium></b-spinner>
       <div
+        v-else
         v-for="(message, index) in messages"
         :key="index"
         :class="messageDirection(message)"
@@ -45,6 +51,7 @@ export default {
       username: "",
       message: "",
       chatChannel: null,
+      messagesLoading: false,
     };
   },
 
@@ -64,7 +71,9 @@ export default {
   },
 
   mounted() {
+    this.messagesToggleLoader();
     this.fetchMessages(this.room.id).then(() => {
+      this.messagesToggleLoader(false);
       this.scrollDown();
     });
     this.handleChatCable();
@@ -99,6 +108,12 @@ export default {
       return "incoming";
     },
 
+    loaderClass() {
+      return this.messagesLoading
+        ? "justify-content-center align-items-center"
+        : "";
+    },
+
     handleChatCable() {
       this.chatChannel = this.$consumer.subscriptions.create(
         {
@@ -129,13 +144,15 @@ export default {
     submitUser() {
       if (this.user) {
         this.updateUser({ id: this.user.id, name: this.username }).then(() => {
-          this.$emit("showSuccessBanner");
+          this.$emit("showSuccessBanner", "User edited successfully");
           this.fetchMessages(this.room.id);
         });
       } else {
         this.createUser({
           browser: this.$browserDetect.meta.name,
           name: this.username,
+        }).then(() => {
+          this.$emit("showSuccessBanner", "User created successfully");
         });
       }
     },
@@ -146,9 +163,15 @@ export default {
 
     scrollDown() {
       const chatContainer = document.getElementById("messages-container");
-      setTimeout(function () {
-        chatContainer.scrollTop = chatContainer.scrollHeight;
-      }, 0);
+      if (chatContainer) {
+        setTimeout(function () {
+          chatContainer.scrollTop = chatContainer.scrollHeight;
+        }, 0);
+      }
+    },
+
+    messagesToggleLoader(value = true) {
+      this.messagesLoading = value;
     },
   },
 };

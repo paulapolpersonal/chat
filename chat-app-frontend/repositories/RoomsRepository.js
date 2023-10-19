@@ -6,4 +6,8 @@ export default ($axios) => ({
   get() {
     return $axios.$get("/rooms");
   },
+
+  show(payload) {
+    return $axios.$get(`/rooms/${payload}`);
+  },
 });

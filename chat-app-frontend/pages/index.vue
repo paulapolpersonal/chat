@@ -14,9 +14,17 @@
         </l-marker>
       </l-map>
     </div>
-    <b-alert :show="showSuccess" class="banner" variant="success" dismissible
-      >Success</b-alert
+    <b-alert
+      :show="showBanner"
+      class="banner"
+      variant="success"
+      dismissible
+      @dismissed="closeBanner"
+      >{{ bannerText }}</b-alert
     >
+    <b-alert :show="error" class="banner" variant="danger" dismissible>{{
+      error
+    }}</b-alert>
     <ChatBox
       v-if="chatBoxOpen"
       :room="room"
@@ -38,7 +46,8 @@ export default {
       chatBoxOpen: false,
       room: {},
       mapCenter: [46.7712, 23.6236],
-      showSuccess: false,
+      bannerText: "",
+      showBanner: false,
     };
   },
 
@@ -50,6 +59,7 @@ export default {
   computed: {
     ...mapGetters({
       rooms: "homepage/rooms",
+      error: "user/error",
     }),
   },
 
@@ -57,10 +67,16 @@ export default {
     ...mapActions({
       fetchRooms: "homepage/fetchRooms",
       createRoom: "homepage/createRoom",
+      fetchNewRoom: "homepage/addRoom",
     }),
 
-    showSuccessBanner() {
-      this.showSuccess = true;
+    showSuccessBanner(text) {
+      this.showBanner = true;
+      this.bannerText = text;
+    },
+
+    closeBanner(text) {
+      this.showBanner = false;
     },
 
     addMarker(event) {
@@ -91,7 +107,7 @@ export default {
         },
         {
           received: (data) => {
-            if (data === "success") this.fetchRooms();
+            if (data) this.fetchNewRoom(data);
           },
         }
       );

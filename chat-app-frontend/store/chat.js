@@ -1,17 +1,25 @@
 export const state = () => ({
   messages: [],
+  error: null,
 });
 
 export const getters = {
   messages: (state) => {
     return state.messages;
   },
+  error(state) {
+    return state.error;
+  },
 };
 
 export const actions = {
   async fetchMessages({ commit }, payload) {
-    const response = await this.$api.messages.get(payload);
-    commit("GET_MESSAGES", response);
+    try {
+      const response = await this.$api.messages.get(payload);
+      commit("GET_MESSAGES", response);
+    } catch (e) {
+      commit("MESSAGES_ERROR", e);
+    }
   },
 
   addMessage({ commit }, payload) {
@@ -26,5 +34,9 @@ export const mutations = {
 
   ADD_MESSAGE(state, message) {
     state.messages.push(message);
+  },
+
+  MESSAGES_ERROR(state, error) {
+    state.error = error;
   },
 };
