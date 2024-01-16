@@ -1,11 +1,17 @@
+import roomsApi from "../repositories/RoomsRepository.js";
+
 export const state = {
   rooms: [],
   error: null,
+  newRoom: {},
 };
 
 export const getters = {
   rooms(state) {
     return state.rooms;
+  },
+  newRoom(state) {
+    return state.newRoom;
   },
   error(state) {
     return state.error;
@@ -15,8 +21,8 @@ export const getters = {
 export const actions = {
   async fetchRooms({ commit }) {
     try {
-      const response = await this.$api.rooms.get();
-      commit("GET_ROOMS", response);
+      const response = await roomsApi.get();
+      commit("GET_ROOMS", response.data);
     } catch (e) {
       commit("ROOMS_ERROR", e);
     }
@@ -24,7 +30,7 @@ export const actions = {
 
   async createRoom({}, payload) {
     try {
-      await this.$api.rooms.post(payload);
+      await roomsApi.post(payload);
     } catch (e) {
       commit("ROOMS_ERROR", e);
     }
@@ -32,8 +38,8 @@ export const actions = {
 
   async addRoom({ commit }, payload) {
     try {
-      const response = await this.$api.rooms.show(payload);
-      commit("CREATE_ROOM", response);
+      const response = await roomsApi.show(payload);
+      commit("CREATE_ROOM", response.data);
     } catch (e) {
       commit("ROOMS_ERROR", e);
     }
@@ -47,6 +53,7 @@ export const mutations = {
 
   CREATE_ROOM(state, room) {
     state.rooms = state.rooms.concat(room);
+    state.newRoom = room;
   },
 
   ROOMS_ERROR(state, error) {

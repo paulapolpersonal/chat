@@ -1,13 +1,17 @@
-export default ($axios) => ({
+import Api from "./Api";
+
+class RoomsRepository {
   post(location) {
-    return $axios.$post("/rooms", { location: location });
-  },
+    return Api.post("/rooms", { location: location });
+  }
 
   get() {
-    return $axios.$get("/rooms");
-  },
+    return Api.get("/rooms");
+  }
 
   show(payload) {
-    return $axios.$get(`/rooms/${payload}`);
-  },
-});
+    return Api.get(`/rooms/${payload}`);
+  }
+}
+
+export default new RoomsRepository();

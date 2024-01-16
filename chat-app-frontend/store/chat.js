@@ -1,3 +1,5 @@
+import messagesApi from "../repositories/MessagesRepository.js";
+
 export const state = () => ({
   messages: [],
   error: null,
@@ -15,8 +17,8 @@ export const getters = {
 export const actions = {
   async fetchMessages({ commit }, payload) {
     try {
-      const response = await this.$api.messages.get(payload);
-      commit("GET_MESSAGES", response);
+      const response = await messagesApi.get(payload);
+      commit("GET_MESSAGES", response.data);
     } catch (e) {
       commit("MESSAGES_ERROR", e);
     }

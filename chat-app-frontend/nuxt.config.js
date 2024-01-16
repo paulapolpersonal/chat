@@ -46,14 +46,14 @@ module.exports = {
     port: 5000,
   },
 
-  proxy: {
-    "/cable": {
-      target: "http://localhost:5000",
-      ws: true,
-    },
-  },
+  // proxy: {
+  //   "/cable": {
+  //     target: "http://localhost:5000",
+  //     ws: true,
+  //   },
+  // },
 
-  plugins: [{ src: "~/plugins/api" }, { src: "~/plugins/consumer" }],
+  plugins: [{ src: "~/plugins/consumer" }],
 
   css: ["~/assets/css/main.scss"],
 

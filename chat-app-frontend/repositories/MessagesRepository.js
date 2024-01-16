@@ -1,5 +1,9 @@
-export default ($axios) => ({
+import Api from "./Api";
+
+class MessagesRepository {
   get(id) {
-    return $axios.$get("/messages", { params: { room_id: id } });
-  },
-});
+    return Api.get("/messages", { params: { room_id: id } });
+  }
+}
+
+export default new MessagesRepository();

@@ -1,13 +1,17 @@
-export default ($axios) => ({
+import Api from "./Api";
+
+class UsersRepository {
   post(payload) {
-    return $axios.$post("/users", payload);
-  },
+    return Api.post("/users", payload);
+  }
 
   show(payload) {
-    return $axios.$get(`/user/${payload}`);
-  },
+    return Api.get(`/user/${payload}`);
+  }
 
   update(payload) {
-    return $axios.$patch(`/users/${payload.id}`, { name: payload.name });
-  },
-});
+    return Api.patch(`/users/${payload.id}`, { name: payload.name });
+  }
+}
+
+export default new UsersRepository();
